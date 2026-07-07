@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniLearn AI | Next-Gen Adaptive Assistant</title>
+    <style>
+        :root {
+            --bg-primary: #050811;
+            --accent-main: #00f2fe;
+            --accent-secondary: #4facfe;
+            --accent-glow: rgba(0, 242, 254, 0.4);
+            --text-main: #ffffff;
+            --text-dim: #8c9ba5;
+            --card-bg: rgba(13, 20, 36, 0.65);
+            --card-border: rgba(0, 242, 254, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- INTERACTIVE CANVAS BACKGROUND --- */
+        #neural-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- 3D CONTINUOUS SPINNING LOGO --- */
+        @keyframes cyberSpin {
+            0% { transform: rotateY(0deg) rotateX(10deg) rotateZ(0deg); }
+            50% { transform: rotateY(180deg) rotateX(-10deg) rotateZ(5deg); }
+            100% { transform: rotateY(360deg) rotateX(10deg) rotateZ(0deg); }
+        }
+
+        @keyframes neonPulse {
+            0%, 100% { filter: drop-shadow(0 0 10px var(--accent-main)); }
+            50% { filter: drop-shadow(0 0 25px var(--accent-secondary)); }
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, var(--accent-main), var(--text-main));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .motion-logo {
+            width: 45px;
+            height: 45px;
+            animation: cyberSpin 10s infinite linear, neonPulse 3s infinite ease-in-out;
+            transform-style: preserve-3d;
+        }
+
+        /* --- MAIN LAYOUT & 3D TILT CARDS --- */
+        main {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            font-weight: 900;
+        }
+
+        .gradient-text {
+            color: var(--accent-main);
+            text-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .hero-text p {
+            color: var(--text-dim);
+            font-size: 1.25rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        /* Reactive 3D Card */
+        .tilt-card-wrapper {
+            perspective: 1000px;
+        }
+
+        .interactive-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 35px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out, border-color 0.5s ease, box-shadow 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .interactive-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .interactive-card:hover::before {
+            opacity: 0.15;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .interactive-card h3 {
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+            color: var(--accent-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-main);
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+
+        textarea {
+            resize: none;
+            height: 90px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent-main), var(--accent-secondary));
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-weight: 800;
+            font-size: 1.05rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px var(--accent-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 0 30px var(--accent-main);
+        }
+
+        button:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* --- NEURAL AI RESPONSE STREAMING --- */
+        .response-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--accent-main);
+            border-radius: 12px;
+            font-size: 1rem;
+            line-height: 1.6;
+            display: none;
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.15);
+        }
+
+        .response-box strong {
+            color: var(--accent-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #responseText {
+            color: #e0e6ed;
+        }
+
+        /* Blinking cyber cursor for streaming text */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background-color: var(--accent-main);
+            margin-left: 4px;
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @media (max-width: 950px) {
+            main { grid-template-columns: 1fr; }
+            .hero-text h1 { font-size: 2.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="neural-canvas"></canvas>
+
+    <header>
+        <div class="logo-container">
+            <svg class="motion-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" stroke="url(#logo-grad)" stroke-width="4" stroke-dasharray="60 15" />
+                <polygon points="50,15 85,50 50,85 15,50" stroke="url(#logo-grad)" stroke-width="3" fill="none"/>
+                <circle cx="50" cy="50" r="12" fill="url(#logo-grad)" />
+                <defs>
+                    <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00f2fe" />
+                        <stop offset="100%" stop-color="#4facfe" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            OmniLearn AI
+        </div>
+    </header>
+
+    <main>
+        <div class="hero-text">
+            <h1>The Adaptive Engine of <span class="gradient-text" id="dynamic-title">Future Learning.</span></h1>
+            <p>Experience real-time pedagogical scaling. Our neural architecture instantly morphs its teaching methodologies—from gamified elementary encouragement to university-grade Socratic research synthesis—ensuring zero academic integrity compromises.</p>
+        </div>
+
+        <div class="tilt-card-wrapper">
+            <div class="interactive-card" id="tilt-card">
+                <div class="card-content">
+                    <h3>⚡ Quantum Tutor Interface</h3>
+                    
+                    <div class="form-group">
+                        <label for="studentName">Student Name</label>
+                        <input type="text" id="studentName" value="Alex" placeholder="Enter student name...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gradeLevel">Educational Tier (Triggers Real-time Theme Shift)</label>
+                        <select id="gradeLevel" onchange="shiftTheme()">
+                            <option value="K-3 (Early Elementary)">K-3 (Early Elementary) - Gamified & Playful</option>
+                            <option value="4-5 (Late Elementary)">4-5 (Late Elementary) - Guided Discovery</option>
+                            <option value="6-8 (Middle School)">6-8 (Middle School) - Socratic Method</option>
+                            <option value="9-12 (High School)">9-12 (High School) - Critical Analysis</option>
+                            <option value="University / College">University / College - Scholarly & Rigorous</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Subject Domain</label>
+                        <select id="subject">
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Science">Science</option>
+                            <option value="Language Arts / English">Language Arts / English</option>
+                            <option value="Computer Science">Computer Science</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="question">Inquiry / Homework Problem</label>
+                        <textarea id="question">How do I optimize this algorithm without exceeding O(N) time complexity?</textarea>
+                    </div>
+
+                    <button onclick="askAI()">Initialize Neural Tutoring</button>
+
+                    <div class="response-box" id="responseBox">
+                        <strong>🤖 Adaptive Guidance Stream:</strong>
+                        <span id="responseText"></span><span class="cursor" id="streamCursor"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /* =================================================================
+           1. REACTIVE NEURAL CANVAS (MOUSE TRACKING & PARTICLE PHYSICS)
+        ================================================================= */
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        const mouse = { x: -1000, y: -1000, radius: 150 };
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() - 0.5) * 1.5;
+                this.radius = Math.random() * 2 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // Reactive mouse repulsion physics
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    const angle = Math.atan2(dy, dx);
+                    const force = (mouse.radius - distance) / mouse.radius;
+                    this.x -= Math.cos(angle) * force * 5;
+                    this.y -= Math.sin(angle) * force * 5;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-main').trim() || '#00f2fe';
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 70; i++) particles.push(new Particle());
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                // Draw cyber-connections between nearby particles
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        const alpha = (1 - dist / 120) * 0.25;
+                        ctx.strokeStyle = `rgba(0, 242, 254, ${alpha})`;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        /* =================================================================
+           2. 3D CARD PARALLAX TILT PHYSICS
+        ================================================================= */
+        const card = document.getElementById('tilt-card');
+        const wrapper = document.querySelector('.tilt-card-wrapper');
+
+        wrapper.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((y - centerY) / centerY) * -8; // Max 8 deg tilt
+            const rotateY = ((x - centerX) / centerX) * 8;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+
+        /* =================================================================
+           3. DYNAMIC THEME SHIFTING PER GRADE LEVEL
+        ================================================================= */
+        function shiftTheme() {
+            const grade = document.getElementById('gradeLevel').value;
+            const root = document.documentElement;
+            const title = document.getElementById('dynamic-title');
+
+            if (grade.includes("K-3")) {
+                root.style.setProperty('--accent-main', '#ff007f');
+                root.style.setProperty('--accent-secondary', '#ffbe0b');
+                root.style.setProperty('--accent-glow', 'rgba(255, 0, 127, 0.4)');
+                root.style.setProperty('--card-border', 'rgba(255, 0, 127, 0.3)');
+                title.innerText = "Playful Learning.";
+            } else if (grade.includes("4-5") || grade.includes("6-8")) {
+                root.style.setProperty('--accent-main', '#00f2fe');
+                root.style.setProperty('--accent-secondary', '#4facfe');
+                root.style.setProperty('--accent-glow', 'rgba(0, 242, 254, 0.4)');
+                root.style.setProperty('--card-border', 'rgba(0, 242, 254, 0.2)');
+                title.innerText = "Guided Discovery.";
+            } else {
+                root.style.setProperty('--accent-main', '#9d4edd');
+                root.style.setProperty('--accent-secondary', '#00f2fe');
+                root.style.setProperty('--accent-glow', 'rgba(157, 78, 221, 0.4)');
+                root.style.setProperty('--card-border', 'rgba(157, 78, 221, 0.3)');
+                title.innerText = "Academic Rigor.";
+            }
+        }
+
+        /* =================================================================
+           4. NEURAL TYPEWRITER STREAMING EFFECT
+        ================================================================= */
+        function streamText(text, elementId, speed = 18) {
+            const element = document.getElementById(elementId);
+            const cursor = document.getElementById('streamCursor');
+            element.innerHTML = "";
+            cursor.style.display = "inline-block";
+            let i = 0;
+
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        /* =================================================================
+           5. FASTAPI BACKEND INTEGRATION
+        ================================================================= */
+        async function askAI() {
+            const btn = document.querySelector('button');
+            const responseBox = document.getElementById('responseBox');
+            
+            btn.innerText = "PROCESSING NEURAL SYNTHESIS...";
+            btn.style.opacity = "0.7";
+            responseBox.style.display = "block";
+            streamText("Connecting to pedagogical engine...", "responseText", 10);
+            
+            const name = document.getElementById('studentName').value || "Student";
+            const grade = document.getElementById('gradeLevel').value;
+            const subject = document.getElementById('subject').value;
+            const question = document.getElementById('question').value;
+
+            try {
+                // 1. Register Student
+                const studentRes = await fetch('/api/students', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, grade_level: grade })
+                });
+                const student = await studentRes.json();
+
+                // 2. Register Assignment Task
+                const assignRes = await fetch(`/api/students/${student.id}/assignments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: "Live Inquiry",
+                        subject: subject,
+                        description: "Reactive Frontend Session",
+                        due_date: new Date().toISOString().split('T')[0]
+                    })
+                });
+                const assignment = await assignRes.json();
+
+                // 3. Request Adaptive Guidance
+                const tutorRes = await fetch('/api/tutor/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student_id: student.id,
+                        assignment_id: assignment.id,
+                        question: question
+                    })
+                });
+                const tutorData = await tutorRes.json();
+
+                // Stream AI Response dynamically
+                streamText(tutorData.ai_response, "responseText", 20);
+
+            } catch (error) {
+                streamText("⚠️ System Offline: Unable to reach FastAPI backend. Please verify Uvicorn server is active on port 8000.", "responseText", 15);
+            } finally {
+                btn.innerText = "Initialize Neural Tutoring";
+                btn.style.opacity = "1";
+            }
+        }
+    </script>
+</body>
+</html>
